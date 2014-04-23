@@ -7,7 +7,10 @@ describe SecQuery::FilingParser do
   let(:filing) { double('filing') }
 
   before(:each) do
-    class SecTestFormParser; end
+    class SecTestFormParser
+      def initialize(*); end
+      def parse(*); end
+    end
     filing.stub(:term).and_return('TestForm')
   end
 
