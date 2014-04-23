@@ -14,7 +14,7 @@ module SecQuery
     def parser_for(term)
       stripped_term = term.to_s.gsub(/[^0-9a-z_ ]/i, '')
       parser_klass = "Sec#{ stripped_term.camelize }Parser"
-      parser_klass.constantize.new
+      parser_klass.constantize.new(@filing)
     rescue NameError
       NilParser.new(parser_klass)
     end

@@ -4,7 +4,7 @@ module SecQuery
   # => SecQuery::Filing
   # SecQuery::Filing requests and parses filings for any given SecQuery::Entity
   class Filing
-    COLUMNS = :cik, :title, :summary, :link, :term, :date, :file_id
+    COLUMNS = :cik, :title, :summary, :link, :term, :date, :file_id, :document
     attr_accessor(*COLUMNS)
 
     def initialize(filing)

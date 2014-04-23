@@ -4,6 +4,7 @@
 require 'active_support/all'
 require 'addressable/uri'
 require 'hpricot'
+require 'nokogiri'
 require 'open-uri'
 require 'rest-client'
 require 'rss'
