@@ -17,3 +17,6 @@ require 'sec_query/relationship'
 require 'sec_query/sec_uri'
 require 'sec_query/transaction'
 require 'sec_query/version'
+
+# parsers
+Dir['./**/parsers/*.rb'].each { |file| require file }

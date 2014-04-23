@@ -106,5 +106,9 @@ module SecQuery
         return entity
       end
     end
+
+    def content
+      @content ||= RestClient.get(self.link)
+    end
   end
 end

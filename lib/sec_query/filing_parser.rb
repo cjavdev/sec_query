@@ -10,10 +10,16 @@ module SecQuery
 
     def parser_for(term)
       "Sec#{ term.to_s.camelize }Parser".constantize.new
+    rescue NameError
+      NilParser.new
     end
 
     def parse(*args, &blk)
       @parser.parse(*args, &blk)
     end
+  end
+
+  class NilParser
+    def parse(*); end
   end
 end
