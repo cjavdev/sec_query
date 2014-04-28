@@ -20,4 +20,4 @@ require 'sec_query/transaction'
 require 'sec_query/version'
 
 # parsers
-Dir['./**/parsers/**/*.rb'].each { |file| require file }
+Dir['./lib/**/parsers/*/*.rb'].each { |file| require file }
