@@ -84,7 +84,7 @@ module SecQuery
       begin
         data = row.split(/   /).reject(&:blank?).map(&:strip)
         data = row.split(/  /).reject(&:blank?).map(&:strip) if data.count == 4
-        data[1] = data[1].gsub(/\/ADV\/\s*|\/FI\/\s*|\/MSD\/\s*|\/GFN\/\s*|\/ADV\s*|\/FI\s*|\/MSD\s*|\/GFN\s*/, '')
+        data[1] = data[1].gsub(/\/ADV\/\s*|\/FI\/\s*|\/MSD\/\s*|\/GFN\/\s*|\/TA\/\s*|\/ADV\s*|\/FI\s*|\/MSD\s*|\/GFN\s*|\/TA\s*/, '')
         puts data.delete_at(1) if data[1][0] == '/'
         return nil unless Regexp.new(/\d{8}/).match(data[3])
         unless data[4][0..3] == 'http'
