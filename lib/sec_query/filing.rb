@@ -14,9 +14,13 @@ module SecQuery
       end
     end
 
+    def detail
+      @detail ||= FilingDetail.fetch(@link)
+    end
+
     def self.fetch(uri, &blk)
-      open(uri) do |rss|
-        parse_rss(rss, &blk)
+      RestClient::Request.execute(method: :get, url: uri.to_s, timeout: 10) do |response, request, result, &block|
+        parse_rss(response.body, &blk)
       end
     end
 
@@ -46,20 +50,10 @@ module SecQuery
     end
 
     def self.for_date(date, &blk)
-      ftp = Net::FTP.new('ftp.sec.gov')
-      ftp.login
-      file_name = ftp.nlst("edgar/daily-index/#{ date.to_sec_uri_format }*")[0]
-      ftp.close
-      open("ftp://ftp.sec.gov/#{ file_name }") do |file|
-        if file_name[-2..-1] == 'gz'
-          gz_reader = Zlib::GzipReader.new(file)
-          gz_reader.rewind
-          filings_for_index(gz_reader).each(&blk)
-        else
-          filings_for_index(file).each(&blk)
-        end
+      url = SecURI.for_date(date).to_s
+      RestClient::Request.execute(method: :get, url: url, timeout: 10) do |response, request, result, &block|
+        filings_for_index(response.body).each(&blk)
       end
-    rescue Net::FTPTempError
     end
 
     def self.filings_for_index(index)
@@ -77,11 +71,21 @@ module SecQuery
     def self.filing_for_index_row(row)
       data = row.split(/   /).reject(&:blank?).map(&:strip)
       data = row.split(/  /).reject(&:blank?).map(&:strip) if data.count == 4
-      data[1].gsub!('/ADV', '')
+      # old stuff?
+      # data[1].gsub!('/ADV', '')
+      # # new stuff:
+      return nil unless data[0] and data[1] and data[2] and data[3] and data[4]
+
       data.delete_at(1) if data[1][0] == '/'
       return nil unless Regexp.new(/\d{8}/).match(data[3])
+      return nil if data[4] == nil
       unless data[4][0..3] == 'http'
-        data[4] = "http://www.sec.gov/Archives/#{ data[4] }"
+        data[4] = "https://www.sec.gov/Archives/#{ data[4] }"
+      end
+      begin
+        Date.parse(data[3])
+      rescue ArgumentError
+        return nil
       end
       Filing.new(
         term: data[1],
@@ -128,22 +132,29 @@ module SecQuery
       end
     end
 
-    def self.find(cik, start = 0, count = 80)
+    def self.find(cik, start = 0, count = 80, args={})
       temp = {}
       temp[:url] = SecURI.browse_edgar_uri({cik: cik})
       temp[:url][:action] = :getcompany
       temp[:url][:start] = start
       temp[:url][:count] = count
+      args.each {|k,v| temp[:url][k]=v }
+
       response = Entity.query(temp[:url].output_atom.to_s)
       document = Nokogiri::HTML(response)
       parse(cik, document)
+    end
+
+    def self.last(cik, args = {})
+      filings = find(cik, 0, 1, args)
+      filings.is_a?(Array) ? filings.first : nil
     end
 
     def self.parse(cik, document)
       filings = []
       if document.xpath('//content').to_s.length > 0
         document.xpath('//content').each do |e|
-          if e.xpath('//content/accession-nunber').to_s.length > 0
+          if e.xpath('//content/accession-number').to_s.length > 0
             content = Hash.from_xml(e.to_s)['content']
             content[:cik] = cik
             content[:file_id] = content.delete('accession_nunber')

@@ -25,9 +25,9 @@ module SecQuery
 
     def self.for_date(date)
       instance = SecURI.new
-      instance.scheme = 'ftp'
-      instance.host = 'ftp.sec.gov'
-      instance.path = "edgar/daily-index/#{ date.to_sec_uri_format }"
+      instance.host = 'www.sec.gov'
+      instance.scheme = 'https'
+      instance.path = "Archives/edgar/daily-index/#{ date.to_sec_uri_format }"
       instance
     end
 
@@ -49,7 +49,7 @@ module SecQuery
       begin Float(string_arg)
         options[:CIK] = string_arg
       rescue
-        if string_arg.length <= 4
+        if string_arg.length <= 5
           options[:CIK] = string_arg
         else
           options[:company] = string_arg.gsub(/[(,?!\''"":.)]/, '')
@@ -81,7 +81,7 @@ module SecQuery
 
     def initialize
       self.host = 'www.sec.gov'
-      self.scheme = 'http'
+      self.scheme = 'https'
       self.path = 'cgi-bin'
     end
 
